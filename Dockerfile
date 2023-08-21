@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:16-alpine
 WORKDIR /opt
 
 ## Copy the package.json and install dependencies

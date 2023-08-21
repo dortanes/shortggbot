@@ -34,6 +34,8 @@ bot.on("message", async (msg) => {
         text.includes("instagram.com") ||
         text.includes("youtube.com"))
     ) {
+      console.info("Got a message in chat", chatId, msg.message_id);
+
       downloadingMsg = await bot.sendMessage(chatId, "⏳");
 
       let videoUrl: string | Buffer | null = null;
