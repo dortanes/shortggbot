@@ -78,10 +78,10 @@ bot.on("message", async (msg) => {
       await bot.deleteMessage(chatId, downloadingMsg.message_id);
     }
   } catch (e) {
+    console.error(e);
+
     await bot.sendMessage(chatId, "Something went wrong. :(", {
       reply_to_message_id: msg.message_id,
     });
-
-    console.error(e);
   }
 });
