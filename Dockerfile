@@ -5,12 +5,12 @@ WORKDIR /opt
 COPY package*.json ./
 
 ## Install dependencies
-RUN npm install
+RUN yarn install --frozen-lockfile
 
 ## Copy rest of the files
 COPY . .
 
-RUN npm run build
+RUN yarn build
 
 ## Build the project
-CMD ["npm", "run", "start"]
+CMD ["yarn", "start"]
