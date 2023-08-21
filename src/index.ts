@@ -7,11 +7,11 @@ import axios from "axios";
 import { readFile, unlink } from "fs/promises";
 import TelegramBot from "node-telegram-bot-api";
 
+import { ReelsResult } from "./ts/reelsTypes";
 import { ShortsResult } from "./ts/shortsTypes";
 import { TikTokResult } from "./ts/tiktokTypes";
 import { downloadFile } from "./utils";
 
-const downloadReel = require("instagram-get-url/src/index");
 const downloadTikTok = require("tiktok-no-watermark-api");
 
 if (!process.env.BOT_TOKEN)
@@ -19,11 +19,13 @@ if (!process.env.BOT_TOKEN)
 
 console.info("Token specified:", process.env.BOT_TOKEN);
 
-const bot = new TelegramBot(String(process.env.BOT_TOKEN), { polling: true });
+const bot = new TelegramBot(String(process.env.BOT_TOKEN));
 
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
+
+  let downloadingMsg: TelegramBot.Message;
 
   try {
     if (
@@ -32,13 +34,24 @@ bot.on("message", async (msg) => {
         text.includes("instagram.com") ||
         text.includes("youtube.com"))
     ) {
-      const downloadingMsg = await bot.sendMessage(chatId, "⏳");
+      downloadingMsg = await bot.sendMessage(chatId, "⏳");
 
       let videoUrl: string | Buffer | null = null;
 
       if (text.includes("instagram.com")) {
         // Get Reels video data
-        videoUrl = (await downloadReel(text)) as string;
+        const video: ReelsResult | null = (
+          await axios.get(" https://api10.reelsdownloader.io/allinone", {
+            headers: {
+              url: text,
+            },
+          })
+        )?.data;
+
+        if (video) {
+          // Retreive video URL
+          videoUrl = video.media?.[0]?.url;
+        }
       } else if (text.includes("tiktok.com")) {
         // Get TikTok video data
         const video: TikTokResult | null = await downloadTikTok(text);
@@ -85,8 +98,15 @@ bot.on("message", async (msg) => {
   } catch (e) {
     console.error(e);
 
+    if (downloadingMsg) {
+      // Delete the first message
+      await bot.deleteMessage(chatId, downloadingMsg.message_id);
+    }
+
     await bot.sendMessage(chatId, "Something went wrong. :(", {
       reply_to_message_id: msg.message_id,
     });
   }
 });
+
+bot.startPolling();
