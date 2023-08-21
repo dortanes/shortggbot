@@ -12,5 +12,7 @@ COPY . .
 
 RUN yarn build
 
+RUN mkdir temp
+
 ## Build the project
 CMD ["yarn", "start"]
