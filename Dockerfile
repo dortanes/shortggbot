@@ -5,7 +5,7 @@ WORKDIR /opt
 COPY package*.json ./
 
 ## Install dependencies
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 ## Copy rest of the files
 COPY . .
