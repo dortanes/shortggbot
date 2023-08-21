@@ -14,6 +14,11 @@ import { downloadFile } from "./utils";
 const downloadReel = require("instagram-get-url/src/index");
 const downloadTikTok = require("tiktok-no-watermark-api");
 
+if (!process.env.BOT_TOKEN)
+  throw new Error("You need to specify BOT_TOKEN in .env file");
+
+console.info("Token specified:", process.env.BOT_TOKEN);
+
 const bot = new TelegramBot(String(process.env.BOT_TOKEN), { polling: true });
 
 bot.on("message", async (msg) => {
