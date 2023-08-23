@@ -111,4 +111,103 @@ bot.on("message", async (msg) => {
   }
 });
 
+bot.on("inline_query", async (payload) => {
+  const text = payload.query;
+
+  try {
+    if (
+      text &&
+      (text.includes("tiktok.com") ||
+        text.includes("instagram.com") ||
+        text.includes("youtube.com"))
+    ) {
+      console.info("Got a inline query", text);
+
+      let videoUrl: string | Buffer | null = null;
+
+      if (text.includes("instagram.com")) {
+        // Get Reels video data
+        const video: ReelsResult | null = (
+          await axios.get(" https://api10.reelsdownloader.io/allinone", {
+            headers: {
+              url: text,
+            },
+          })
+        )?.data;
+
+        if (video) {
+          // Retreive video URL
+          videoUrl = video.media?.[0]?.url;
+        }
+      } else if (text.includes("tiktok.com")) {
+        // Get TikTok video data
+        const video: TikTokResult | null = await downloadTikTok(text);
+
+        if (video) {
+          // Retreive video URL
+          videoUrl =
+            video?.result?.video?.bit_rate?.[0]?.play_addr?.url_list?.[0];
+        }
+      } else if (text.includes("youtube.com")) {
+        // Get Shorts video data
+        const video: ShortsResult | null = (
+          await axios.get("https://cdn19.savetube.me/info?url=" + text)
+        )?.data;
+
+        if (video) {
+          // Retreive video URL
+          const ytVideoUrl = video?.data?.video_formats?.[0]?.url;
+          const videoFilePath = "./temp/" + video?.data?.id + ".mp4";
+
+          // Download video locally
+          await downloadFile(String(ytVideoUrl), videoFilePath);
+          // Upload video to Telegram
+          videoUrl = await readFile(videoFilePath);
+          // Delete video locally
+          await unlink(videoFilePath);
+        }
+      }
+
+      if (videoUrl) {
+        if (typeof videoUrl === "string") {
+          await bot.answerInlineQuery(payload.id, [
+            {
+              type: "video",
+              id: "video",
+              video_url: videoUrl,
+              mime_type: "video/mp4",
+              thumb_url: "",
+              title: "Send video",
+            },
+          ]);
+        }
+      } else {
+        await bot.answerInlineQuery(payload.id, [
+          {
+            type: "article",
+            id: "error",
+            title: "Something went wrong",
+            input_message_content: {
+              message_text: "Something went wrong",
+            },
+          },
+        ]);
+      }
+    }
+  } catch (e) {
+    console.error(e);
+
+    await bot.answerInlineQuery(payload.id, [
+      {
+        type: "article",
+        id: "error",
+        title: "Something went wrong",
+        input_message_content: {
+          message_text: "Something went wrong",
+        },
+      },
+    ]);
+  }
+});
+
 bot.startPolling();
