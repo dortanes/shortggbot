@@ -123,7 +123,8 @@ bot.on("inline_query", async (payload) => {
     ) {
       console.info("Got a inline query", text);
 
-      let videoUrl: string | Buffer | null = null;
+      let videoUrl: string | null = null;
+      let posterUrl: string | null = null;
 
       if (text.includes("instagram.com")) {
         // Get Reels video data
@@ -138,6 +139,7 @@ bot.on("inline_query", async (payload) => {
         if (video) {
           // Retreive video URL
           videoUrl = video.media?.[0]?.url;
+          posterUrl = video.media?.[0]?.poster;
         }
       } else if (text.includes("tiktok.com")) {
         // Get TikTok video data
@@ -147,40 +149,34 @@ bot.on("inline_query", async (payload) => {
           // Retreive video URL
           videoUrl =
             video?.result?.video?.bit_rate?.[0]?.play_addr?.url_list?.[0];
+          posterUrl = video?.result?.video?.cover?.url_list?.find((c) =>
+            c.includes(".jpeg")
+          );
         }
       } else if (text.includes("youtube.com")) {
-        // Get Shorts video data
-        const video: ShortsResult | null = (
-          await axios.get("https://cdn19.savetube.me/info?url=" + text)
-        )?.data;
-
-        if (video) {
-          // Retreive video URL
-          const ytVideoUrl = video?.data?.video_formats?.[0]?.url;
-          const videoFilePath = "./temp/" + video?.data?.id + ".mp4";
-
-          // Download video locally
-          await downloadFile(String(ytVideoUrl), videoFilePath);
-          // Upload video to Telegram
-          videoUrl = await readFile(videoFilePath);
-          // Delete video locally
-          await unlink(videoFilePath);
-        }
+        return await bot.answerInlineQuery(payload.id, [
+          {
+            type: "article",
+            id: "error",
+            title: "YouTube Shorts is currently unsupported in Inline Mode",
+            input_message_content: {
+              message_text: "Something went wrong",
+            },
+          },
+        ]);
       }
 
       if (videoUrl) {
-        if (typeof videoUrl === "string") {
-          await bot.answerInlineQuery(payload.id, [
-            {
-              type: "video",
-              id: "video",
-              video_url: videoUrl,
-              mime_type: "video/mp4",
-              thumb_url: "",
-              title: "Send video",
-            },
-          ]);
-        }
+        await bot.answerInlineQuery(payload.id, [
+          {
+            type: "video",
+            id: "video",
+            video_url: videoUrl,
+            mime_type: "video/mp4",
+            thumb_url: posterUrl,
+            title: "Send video",
+          },
+        ]);
       } else {
         await bot.answerInlineQuery(payload.id, [
           {
