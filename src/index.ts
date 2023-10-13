@@ -63,7 +63,7 @@ bot.on("message", async (msg) => {
       } else if (text.includes("youtube.com")) {
         // Get Shorts video data
         const video: ShortsResult | null = (
-          await axios.get("https://cdn19.savetube.me/info?url=" + text)
+          await axios.get("https://cdn28.savetube.me/info?url=" + text)
         )?.data;
 
         if (video) {
