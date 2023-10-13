@@ -1,7 +1,29 @@
-export interface ReelsResult {
-  media: Media[];
-  owner_info: Ownerinfo;
-  media_type: string;
+interface ReelsResult {
+  author: Author;
+  video: Video;
+}
+
+interface Video {
+  likesCount: number;
+  commentCount: number;
+  "@type": string;
+  uploadDate: string;
+  description: string;
+  name: string;
+  caption: string;
+  height: string;
+  width: string;
+  contentUrl: string;
+  thumbnailUrl: string;
+  genre: any[];
+  keywords: any[];
+  interactionStatistic?: any;
+}
+
+interface Author {
+  id: string;
+  image: string;
+  name: string;
 }
 
 interface Ownerinfo {

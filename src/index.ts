@@ -3,16 +3,19 @@
  * Telegram TikTok/Reels/Shorts Downloader Bot
  */
 
-import axios from "axios";
-import { readFile, unlink } from "fs/promises";
-import TelegramBot from "node-telegram-bot-api";
+import axios from 'axios';
+import {
+  readFile,
+  unlink,
+} from 'fs/promises';
+import TelegramBot from 'node-telegram-bot-api';
 
-import { ReelsResult } from "./ts/reelsTypes";
-import { ShortsResult } from "./ts/shortsTypes";
-import { TikTokResult } from "./ts/tiktokTypes";
-import { downloadFile } from "./utils";
+import { ShortsResult } from './ts/shortsTypes';
+import { TikTokResult } from './ts/tiktokTypes';
+import { downloadFile } from './utils';
 
 const downloadTikTok = require("tiktok-no-watermark-api");
+const igdl = require("instagram-get-url/src");
 
 if (!process.env.BOT_TOKEN)
   throw new Error("You need to specify BOT_TOKEN in .env file");
@@ -42,17 +45,11 @@ bot.on("message", async (msg) => {
 
       if (text.includes("instagram.com")) {
         // Get Reels video data
-        const video: ReelsResult | null = (
-          await axios.get(" https://api10.reelsdownloader.io/allinone", {
-            headers: {
-              url: text,
-            },
-          })
-        )?.data;
+        const video = await igdl(text);
 
         if (video) {
           // Retreive video URL
-          videoUrl = video.media?.[0]?.url;
+          videoUrl = video;
         }
       } else if (text.includes("tiktok.com")) {
         // Get TikTok video data
@@ -128,18 +125,11 @@ bot.on("inline_query", async (payload) => {
 
       if (text.includes("instagram.com")) {
         // Get Reels video data
-        const video: ReelsResult | null = (
-          await axios.get(" https://api10.reelsdownloader.io/allinone", {
-            headers: {
-              url: text,
-            },
-          })
-        )?.data;
+        const video = await igdl(text);
 
         if (video) {
           // Retreive video URL
-          videoUrl = video.media?.[0]?.url;
-          posterUrl = video.media?.[0]?.poster;
+          videoUrl = video;
         }
       } else if (text.includes("tiktok.com")) {
         // Get TikTok video data
