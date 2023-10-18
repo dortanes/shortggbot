@@ -52,7 +52,9 @@ export async function fetchTTSearch(searchString: string) {
     result
   );
 
-  return result.data.map((i) => ({
+  const filteredResult = result.data.filter((i) => i.type === 1);
+
+  return filteredResult.map((i) => ({
     id: i.item.id,
     description: i.item.desc,
     videoUrl: i.item.video.playAddr,
