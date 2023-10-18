@@ -3,24 +3,18 @@
  * Telegram TikTok/Reels/Shorts Downloader Bot
  */
 
-import axios from 'axios';
-import {
-  readFile,
-  unlink,
-} from 'fs/promises';
-import TelegramBot, { Message } from 'node-telegram-bot-api';
+import axios from "axios";
+import { readFile, unlink } from "fs/promises";
+import TelegramBot, { Message } from "node-telegram-bot-api";
 import {
   InlineKeyboard,
   InlineKeyboardButton,
   Row,
-} from 'node-telegram-keyboard-wrapper';
+} from "node-telegram-keyboard-wrapper";
 
-import { ShortsResult } from './ts/shortsTypes';
-import { TikTokResult } from './ts/tiktokTypes';
-import {
-  downloadFile,
-  fetchTTSearch,
-} from './utils';
+import { ShortsResult } from "./ts/shortsTypes";
+import { TikTokResult } from "./ts/tiktokTypes";
+import { downloadFile, fetchTTSearch } from "./utils";
 
 const downloadTikTok = require("tiktok-no-watermark-api");
 const igdl = require("instagram-get-url/src");
@@ -41,7 +35,7 @@ async function sendTSMessage(
   const fetchingMsg = await bot.sendMessage(chatId, "⏳");
 
   try {
-    const results = await fetchTTSearch(keywords);
+    const results = await fetchTTSearch(keywords, i);
     const result = results?.[i];
 
     if (!result) {
