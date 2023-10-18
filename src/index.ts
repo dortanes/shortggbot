@@ -26,6 +26,8 @@ console.info("Token specified:", process.env.BOT_TOKEN);
 
 const bot = new TelegramBot(String(process.env.BOT_TOKEN));
 
+const ttSearchResults = new Map();
+
 async function sendTSMessage(
   keywords: string,
   chatId: number,
@@ -35,11 +37,34 @@ async function sendTSMessage(
   const fetchingMsg = await bot.sendMessage(chatId, "⏳");
 
   try {
-    const results = await fetchTTSearch(keywords, i);
-    const result = results?.[i];
+    const cachedResults = ttSearchResults.get(keywords);
+    let cachedOffset = cachedResults?.offset;
+    let result = cachedResults?.results?.[i];
 
     if (!result) {
-      return await bot.sendMessage(chatId, "No results found");
+      if (typeof cachedOffset === "number") {
+        cachedOffset = Number(cachedOffset) + 12;
+      } else {
+        cachedOffset = 10;
+      }
+
+      // Fetch TT search results
+      const results = await fetchTTSearch(keywords, cachedOffset);
+
+      // Delete old results
+      ttSearchResults.delete(keywords);
+
+      if (!results || results.length === 0)
+        return await bot.sendMessage(chatId, "No results found");
+
+      // Update cache
+      ttSearchResults.set(keywords, { offset: cachedOffset, results });
+
+      // Get the first result
+      i = 0;
+      result = results?.[i];
+
+      console.log("updated cache and offset to", cachedOffset);
     }
 
     const resultText = `Description: ${result.description ?? "?"}`;
@@ -57,7 +82,7 @@ async function sendTSMessage(
       new InlineKeyboardButton(
         "Next",
         "callback_data",
-        `ts:next:${keywords}:${i}`
+        `ts:next:${keywords}:${i + 1}`
       ),
       new InlineKeyboardButton(
         "Open in TikTok",
@@ -82,6 +107,8 @@ async function sendTSMessage(
       });
     }
   } catch (e) {
+    ttSearchResults.delete(keywords);
+
     console.error(e);
     await bot.sendMessage(chatId, "Something went wrong. :(", {
       reply_to_message_id: msg.message_id,
@@ -103,7 +130,7 @@ bot.on("callback_query", (query) => {
   const [type, action, keywords, i] = text.split(":");
 
   if (type === "ts" && action === "next") {
-    return sendTSMessage(keywords, chatId, query.message, Number(i) + 1);
+    return sendTSMessage(keywords, chatId, query.message, Number(i));
   } else if (type === "ts" && action === "delete") {
     return bot.deleteMessage(chatId, query.message?.message_id);
   }

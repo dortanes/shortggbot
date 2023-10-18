@@ -35,7 +35,7 @@ export async function fetchTTSearch(
   offset: number = 0,
   type: number = 1
 ) {
-  const url = `https://www.tiktok.com/api/search/general/full/?WebIdLastTime=1696541552&aid=1988&app_language=en&app_name=tiktok_web&browser_language=en-US&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15&channel=tiktok_web&cookie_enabled=true&device_id=7286590434435040774&device_platform=web_pc&device_type=web_h264&focus_state=true&from_page=search&history_len=5&is_fullscreen=false&is_page_visible=true&keyword=${searchString}&${decodeURIComponent(
+  const url = `https://www.tiktok.com/api/search/general/full/?WebIdLastTime=1696541552&aid=1988&app_language=en&app_name=tiktok_web&browser_language=en-US&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15&channel=tiktok_web&cookie_enabled=true&device_id=7286590434435040774&device_platform=web_pc&device_type=web_h264&focus_state=true&from_page=search&history_len=10&is_fullscreen=false&is_page_visible=true&keyword=${searchString}&${decodeURIComponent(
     process.env.TT_SEARCH_PAYLOAD.replace("[offset]", `${offset}`)
   )}`;
 
@@ -55,6 +55,8 @@ export async function fetchTTSearch(
     },
     result
   );
+
+  if (!result.data) return [];
 
   const filteredResult = result.data.filter((i) => i.type === type);
 
