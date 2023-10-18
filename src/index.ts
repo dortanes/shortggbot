@@ -45,7 +45,7 @@ async function sendTSMessage(
       if (typeof cachedOffset === "number") {
         cachedOffset = Number(cachedOffset) + 12;
       } else {
-        cachedOffset = 10;
+        cachedOffset = 0;
       }
 
       // Fetch TT search results
